@@ -7,7 +7,6 @@ import TypingIndicator from './TypingIndicator';
 import { Conversation, Message } from './types';
 import './WelcomeScreen.css';
 import './App.css';
-
 const GEMINI_API_KEY = 'AIzaSyDOaO_on4yoPDPk-HDMS85pBE7ADt8SAP8';
 
 function generateId() {
