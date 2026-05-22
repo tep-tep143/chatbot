@@ -21,7 +21,7 @@ interface Conversation {
 
 // ── GEMINI CONFIG ──────────────────────────────────────────────────────────
 const API_KEY    = import.meta.env.VITE_GEMINI_API_KEY;
-const MODEL      = import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.0-flash';
+const MODEL      = import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-flash';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
 
 async function getGeminiResponse(messages: Message[]): Promise<string> {
@@ -68,6 +68,8 @@ export default function App() {
   const [searchQuery, setSearchQuery]     = useState('');
   const [showSearch, setShowSearch]       = useState(false);
   const [shareToast, setShareToast]       = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [showFullPhoto, setShowFullPhoto] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef    = useRef<HTMLTextAreaElement>(null);
   const streamRef      = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -409,7 +411,7 @@ export default function App() {
         .conv-btn.active { background: var(--bg-active); color: var(--text-primary); }
 
         /* Sidebar footer */
-        .sb-footer { padding: 8px; border-top: 1px solid var(--border); min-width: 260px; }
+        .sb-footer { padding: 8px 8px 12px; border-top: 1px solid var(--border); min-width: 260px; }
         .user-row {
           display: flex; align-items: center; gap: 10px;
           padding: 9px 12px; border-radius: var(--r-md); cursor: pointer;
@@ -418,9 +420,7 @@ export default function App() {
         .user-row:hover { background: var(--bg-hover); }
         .user-avatar {
           width: 32px; height: 32px; border-radius: 50%;
-          background: linear-gradient(135deg, #7c3aed, #a855f7);
-          display: flex; align-items: center; justify-content: center;
-          font-size: 12px; font-weight: 700; color: white; flex-shrink: 0;
+          flex-shrink: 0; overflow: hidden;
         }
         .user-detail { display: flex; flex-direction: column; text-align: left; gap: 1px; }
         .user-detail-name { font-size: 13.5px; font-weight: 500; color: var(--text-primary); }
@@ -497,10 +497,15 @@ export default function App() {
 
         .welcome-logo {
           width: 68px; height: 68px; margin-bottom: 18px;
-          filter: drop-shadow(0 0 16px rgba(56,189,248,0.45));
+          filter: drop-shadow(0 0 16px rgba(255,105,180,0.6));
           animation: float 3.5s ease-in-out infinite;
         }
-        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        
+        @keyframes shimmer {
+          0%,100% { filter: drop-shadow(0 0 8px rgba(255,182,193,0.6)); }
+          50%      { filter: drop-shadow(0 0 22px rgba(255,105,180,1)); }
+        }
+        .welcome-logo { animation: float 3.5s ease-in-out infinite, shimmer 2s ease-in-out infinite; }
 
         .welcome-title {
           font-size: clamp(22px,4vw,30px); font-weight: 700; letter-spacing: -0.5px;
@@ -627,14 +632,6 @@ export default function App() {
           display: flex; align-items: center; justify-content: space-between;
           padding: 6px 10px 10px;
         }
-        .input-left-btns { display: flex; align-items: center; gap: 2px; }
-        .input-icon-btn {
-          width: 32px; height: 32px; border-radius: 50%; border: none;
-          background: transparent; color: var(--text-muted); cursor: pointer;
-          display: flex; align-items: center; justify-content: center; transition: all 0.14s;
-        }
-        .input-icon-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
-
         .send-btn {
           width: 34px; height: 34px; border-radius: 50%; border: none; flex-shrink: 0;
           background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3);
@@ -731,16 +728,93 @@ export default function App() {
             ))}
           </nav>
 
+    
           {/* Footer */}
           <div className="sb-footer">
-            <button className="user-row">
-              <div className="user-avatar">SS</div>
-              <div className="user-detail">
-                <span className="user-detail-name">shietep's Assistant</span>
+            <div className="user-row" onClick={() => setShowProfile(true)} style={{cursor:'pointer'}}>
+              <div className="user-avatar">
+                <img 
+                  src="/photo.jpg" 
+                  alt="photo"
+                  style={{ width:'100%', height:'100%', objectFit:'cover' }}
+                />
               </div>
-              <span className="upgrade-badge">Upgrade</span>
-            </button>
+              <div className="user-detail">
+                <span className="user-detail-name">Shietep's MA</span>
+              </div>
+            </div>
           </div>
+
+          {/* Profile Modal */}
+          {showProfile && (
+            <div
+              style={{
+                position:'fixed', inset:0, zIndex:999,
+                background:'rgba(0,0,0,0.6)', backdropFilter:'blur(4px)',
+                display:'flex', alignItems:'center', justifyContent:'center',
+              }}
+              onClick={() => setShowProfile(false)}
+            >
+              <div
+                style={{
+                  background:'#1a1a1a', border:'1px solid rgba(255,255,255,0.1)',
+                  borderRadius:'20px', padding:'32px', width:'320px',
+                  display:'flex', flexDirection:'column', alignItems:'center', gap:'16px',
+                  animation:'fadeUp 0.2s ease both',
+                }}
+                onClick={e => e.stopPropagation()}
+              >
+                {/* Avatar */}
+                <div style={{
+                  width:'80px', height:'80px', borderRadius:'50%', overflow:'hidden',
+                  border:'2px solid rgba(255,255,255,0.15)',
+                  boxShadow:'0 0 0 4px rgba(56,189,248,0.15)',
+                }}>
+                  <img src="/photo.jpg" alt="profile"
+                    style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                </div>
+
+                {/* Name */}
+                <div style={{ textAlign:'center' }}>
+                  <div style={{ fontSize:'17px', fontWeight:'600', color:'#ececec' }}>Our Account</div>
+                  <div style={{ fontSize:'13px', color:'#8e8ea0', marginTop:'4px' }}>Free Plan</div>
+                </div>
+
+                {/* Divider */}
+                <div style={{ width:'100%', height:'1px', background:'rgba(255,255,255,0.08)' }} />
+
+                {/* Info rows */}
+                {[
+                  { icon:'🤖', label:'Model', value: MODEL_DISPLAY },
+                  { icon:'💬', label:'Conversations', value: conversations.length },
+                ].map(({ icon, label, value }) => (
+                  <div key={label} style={{
+                    width:'100%', display:'flex', justifyContent:'space-between',
+                    alignItems:'center', fontSize:'13.5px',
+                  }}>
+                    <span style={{ color:'#8e8ea0' }}>{icon} {label}</span>
+                    <span style={{ color:'#ececec', fontWeight:'500' }}>{value}</span>
+                  </div>
+                ))}
+
+                {/* Divider */}
+                <div style={{ width:'100%', height:'1px', background:'rgba(255,255,255,0.08)' }} />
+
+                {/* Upgrade button */}
+
+                {/* Close */}
+                <button
+                  onClick={() => setShowProfile(false)}
+                  style={{
+                    background:'none', border:'none', color:'#555568',
+                    fontSize:'13px', cursor:'pointer', fontFamily:'var(--font-sans)',
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
         </aside>
 
         {/* ── MAIN ── */}
@@ -795,19 +869,18 @@ export default function App() {
               <div className="welcome">
                 <div className="welcome-logo">
                   <svg viewBox="0 0 64 64" fill="none" style={{ width:'100%', height:'100%' }}>
-                    <circle cx="32" cy="32" r="28" fill="url(#wg)" />
-                    <path d="M20 32C20 24 26 20 32 20C38 20 44 24 44 32C44 40 38 44 32 44C26 44 20 40 20 32Z" fill="white" opacity="0.95"/>
-                    <circle cx="26" cy="30" r="4" fill="#0ea5e9"/>
-                    <circle cx="38" cy="30" r="4" fill="#0ea5e9"/>
-                    <circle cx="27" cy="29" r="1.6" fill="white"/>
-                    <circle cx="39" cy="29" r="1.6" fill="white"/>
-                    <path d="M26 37Q32 41.5 38 37" stroke="#0ea5e9" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
                     <defs>
                       <linearGradient id="wg" x1="0" y1="0" x2="64" y2="64">
-                        <stop offset="0%" stopColor="#38bdf8"/>
-                        <stop offset="100%" stopColor="#0369a1"/>
+                        <stop offset="0%" stopColor="#ffb6c1"/>
+                        <stop offset="100%" stopColor="#ff69b4"/>
                       </linearGradient>
+                      <filter id="glow">
+                        <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                      </filter>
                     </defs>
+                    <path d="M32 56C32 56 8 42 8 24a12 12 0 0 1 24-4 12 12 0 0 1 24 4c0 18-24 32-24 32z"
+                      fill="url(#wg)" filter="url(#glow)"/>
                   </svg>
                 </div>
                 <h1 className="welcome-title">What can I help with?</h1>
@@ -939,19 +1012,6 @@ export default function App() {
                   />
                 </div>
                 <div className="input-bottom">
-                  <div className="input-left-btns">
-                    <button className="input-icon-btn" title="Attach">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                        <line x1="12" y1="5" x2="12" y2="19"/>
-                        <line x1="5" y1="12" x2="19" y2="12"/>
-                      </svg>
-                    </button>
-                    <button className="input-icon-btn" title="More tools">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                        <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
-                      </svg>
-                    </button>
-                  </div>
                   <button
                     className={`send-btn ${canSend ? 'ready' : ''}`}
                     onClick={() => handleSend(input)}
