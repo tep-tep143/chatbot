@@ -45,7 +45,7 @@ async function getGeminiResponse(messages: Message[]): Promise<string> {
 // ── HELPERS ────────────────────────────────────────────────────────────────
 function generateId() { return Math.random().toString(36).slice(2, 9); }
 
-const MODEL_DISPLAY = (import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.0-flash');
+const MODEL_DISPLAY = (import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-flash');
 
 const SUGGESTIONS = [
   { icon: '✨', text: 'Tell me something amazing about the universe', label: 'Fun fact' },
@@ -68,6 +68,7 @@ export default function App() {
   const [searchQuery, setSearchQuery]     = useState('');
   const [showSearch, setShowSearch]       = useState(false);
   const [shareToast, setShareToast]       = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const [showProfile, setShowProfile] = useState(false);
   const [showFullPhoto, setShowFullPhoto] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -298,26 +299,48 @@ export default function App() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-          --sky:           #38bdf8;
-          --sky-light:     #7dd3fc;
-          --sky-dark:      #0ea5e9;
-          --sky-subtle:    rgba(56,189,248,0.08);
-          --bg-base:       #0d0d0d;
-          --bg-sidebar:    #171717;
-          --bg-hover:      #212121;
-          --bg-active:     #2a2a2a;
-          --bg-input:      #1c1c1c;
-          --bg-user-msg:   #2f2f2f;
-          --border:        rgba(255,255,255,0.08);
-          --border-hover:  rgba(255,255,255,0.14);
-          --text-primary:  #ececec;
-          --text-secondary:#8e8ea0;
-          --text-muted:    #555568;
-          --font-sans:     'Outfit', sans-serif;
-          --font-mono:     'JetBrains Mono', monospace;
+          --font-sans: 'Outfit', sans-serif;
+          --font-mono: 'JetBrains Mono', monospace;
           --r-sm: 6px; --r-md: 10px; --r-lg: 18px; --r-xl: 26px;
         }
 
+        /* ── DARK MODE ── */
+        [data-theme="dark"] {
+          --sky:           #e8b4b8;
+          --sky-light:     #f0cdd0;
+          --sky-dark:      #c9888e;
+          --sky-subtle:    rgba(232,180,184,0.08);
+          --bg-base:       #1a1214;
+          --bg-sidebar:    #221719;
+          --bg-hover:      #2e2022;
+          --bg-active:     #3a2729;
+          --bg-input:      #261a1c;
+          --bg-user-msg:   #3a2729;
+          --border:        rgba(232,180,184,0.1);
+          --border-hover:  rgba(232,180,184,0.18);
+          --text-primary:  #f5e8ea;
+          --text-secondary:#b89498;
+          --text-muted:    #7d5a5e;
+        }
+
+        /* ── LIGHT MODE ── */
+        [data-theme="light"] {
+          --sky:           #c9888e;
+          --sky-light:     #e8b4b8;
+          --sky-dark:      #a85f65;
+          --sky-subtle:    rgba(201,136,142,0.08);
+          --bg-base:       #fdf5f6;
+          --bg-sidebar:    #f5e8ea;
+          --bg-hover:      #eedde0;
+          --bg-active:     #e8d0d3;
+          --bg-input:      #f9eef0;
+          --bg-user-msg:   #e8d0d3;
+          --border:        rgba(180,100,108,0.12);
+          --border-hover:  rgba(180,100,108,0.22);
+          --text-primary:  #2a1518;
+          --text-secondary:#7d5a5e;
+          --text-muted:    #b89498;
+        }
         html, body, #root { height: 100%; width: 100%; overflow: hidden; }
         body { font-family: var(--font-sans); background: var(--bg-base); color: var(--text-primary); line-height: 1.6; -webkit-font-smoothing: antialiased; }
 
@@ -510,7 +533,7 @@ export default function App() {
         .welcome-title {
           font-size: clamp(22px,4vw,30px); font-weight: 700; letter-spacing: -0.5px;
           margin-bottom: 8px;
-          background: linear-gradient(135deg, #fff 20%, var(--sky-light));
+          background: linear-gradient(135deg, #f5e8ea 20%, #e8b4b8);
           -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
         .welcome-sub { font-size: 15px; color: var(--text-secondary); margin-bottom: 36px; max-width: 340px; line-height: 1.6; }
@@ -638,10 +661,10 @@ export default function App() {
           display: flex; align-items: center; justify-content: center; cursor: not-allowed; transition: all 0.18s;
         }
         .send-btn.ready {
-          background: white; color: #0d0d0d; cursor: pointer;
-          box-shadow: 0 2px 8px rgba(255,255,255,0.15);
+          background: var(--sky); color: var(--bg-base); cursor: pointer;
+          box-shadow: 0 2px 8px var(--sky-subtle);
         }
-        .send-btn.ready:hover { background: #e8e8e8; transform: scale(1.05); }
+        .send-btn.ready:hover { background: var(--sky-light); transform: scale(1.05); }
 
         .disclaimer { font-size: 11.5px; color: var(--text-muted); text-align: center; margin-top: 6px; }
       `}</style>
@@ -654,7 +677,7 @@ export default function App() {
         <div className="sb-overlay on" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <div className="app">
+      <div className="app" data-theme={darkMode ? 'dark' : 'light'}>
 
         {/* ── SIDEBAR ── */}
         <aside className={`sidebar ${isMobile ? (sidebarOpen ? 'open' : '') : (sidebarOpen ? '' : 'collapsed')}`}>
@@ -757,7 +780,7 @@ export default function App() {
             >
               <div
                 style={{
-                  background:'#1a1a1a', border:'1px solid rgba(255,255,255,0.1)',
+                  background:'var(--bg-sidebar)', border:'1px solid rgba(255,255,255,0.1)',
                   borderRadius:'20px', padding:'32px', width:'320px',
                   display:'flex', flexDirection:'column', alignItems:'center', gap:'16px',
                   animation:'fadeUp 0.2s ease both',
@@ -768,7 +791,7 @@ export default function App() {
                 <div style={{
                   width:'80px', height:'80px', borderRadius:'50%', overflow:'hidden',
                   border:'2px solid rgba(255,255,255,0.15)',
-                  boxShadow:'0 0 0 4px rgba(56,189,248,0.15)',
+                  boxShadow:'0 0 0 4px rgba(232,180,184,0.15)',
                 }}>
                   <img src="/photo.jpg" alt="profile"
                     style={{ width:'100%', height:'100%', objectFit:'cover' }} />
@@ -776,7 +799,7 @@ export default function App() {
 
                 {/* Name */}
                 <div style={{ textAlign:'center' }}>
-                  <div style={{ fontSize:'17px', fontWeight:'600', color:'#ececec' }}>Our Account</div>
+                  <div style={{ fontSize:'17px', fontWeight:'600', color:'var(--text-primary)' }}>Our Account</div>
                   <div style={{ fontSize:'13px', color:'#8e8ea0', marginTop:'4px' }}>Free Plan</div>
                 </div>
 
@@ -792,8 +815,8 @@ export default function App() {
                     width:'100%', display:'flex', justifyContent:'space-between',
                     alignItems:'center', fontSize:'13.5px',
                   }}>
-                    <span style={{ color:'#8e8ea0' }}>{icon} {label}</span>
-                    <span style={{ color:'#ececec', fontWeight:'500' }}>{value}</span>
+                    <span style={{ color:'var(--text-secondary)' }}>{icon} {label}</span>
+                    <span style={{ color:'var(--text-primary)', fontWeight:'500' }}>{value}</span>
                   </div>
                 ))}
 
@@ -841,6 +864,22 @@ export default function App() {
             </div>
 
             <div className="topbar-right">
+              <button className="menu-btn" onClick={() => setDarkMode(d => !d)} title="Toggle theme">
+                {darkMode ? (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                  </svg>
+                ) : (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                  </svg>
+                )}
+              </button>
+              
               {activeConv && activeConv.messages.length > 0 && (
                 <button className={`clear-btn ${clearConfirm ? 'confirm' : ''}`} onClick={clearConversation}>
                   {clearConfirm ? 'Sure?' : 'Clear'}
